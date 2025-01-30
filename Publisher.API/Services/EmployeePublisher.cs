@@ -21,7 +21,7 @@ namespace Publisher.API.Services
 
         public async Task PublishEmployeeAsync(Employee employee)
         {
-            var subscriberUrl = _configuration["SubscriberUrl"] ?? "https://localhost:5002";
+            var subscriberUrl = _configuration["SubscriberUrl"] ?? "http://localhost:5002";
             var response = await _httpClient.PostAsJsonAsync(
                 $"{subscriberUrl}/messages", 
                 employee);
