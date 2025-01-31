@@ -19,8 +19,23 @@ namespace Subscriber.API.Controllers
             _logger = logger;
         }
 
+        // [HttpGet("dapr/subscribe")]
+        // public IActionResult Subscribe()
+        // {
+        //     var subscriptions = new[]
+        //     {
+        //         new {
+        //             pubsubname = "redis-pubsub",
+        //             topic = "employeemessage",
+        //             route = "/messages"
+        //         }
+        //     };
+
+        //     return Ok(subscriptions);
+        // }
+
         [HttpPost("/messages")]
-        [Topic("redis-pubsub", "employeemessage")] // This makes the endpoint subscribe to Dapr messages
+        //[Topic("redis-pubsub", "employeemessage")] // This makes the endpoint subscribe to Dapr messages
         public async Task<IActionResult> Post([FromBody] Employee employee)
         {
             try 
