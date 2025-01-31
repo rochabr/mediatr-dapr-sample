@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Antiforgery;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddDapr();
@@ -15,5 +17,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCloudEvents();
+app.MapSubscribeHandler();
 app.MapControllers();
 app.Run();

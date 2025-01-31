@@ -35,7 +35,7 @@ namespace Subscriber.API.Controllers
         // }
 
         [HttpPost("/messages")]
-        //[Topic("redis-pubsub", "employeemessage")] // This makes the endpoint subscribe to Dapr messages
+        [Topic("redis-pubsub", "employeemessage")] // This makes the endpoint subscribe to Dapr messages
         public async Task<IActionResult> Post([FromBody] Employee employee)
         {
             try 
