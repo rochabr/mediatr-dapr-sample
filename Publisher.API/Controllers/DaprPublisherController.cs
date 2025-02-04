@@ -25,7 +25,12 @@ namespace Publisher.API.Controllers
         {
             try
             {
-                await _daprClient.PublishEventAsync(PUBSUB_NAME, TOPIC_NAME, employee);
+                await _daprClient.PublishEventAsync(PUBSUB_NAME, TOPIC_NAME, employee,           
+                    new Dictionary<string, string> 
+                    { 
+                        { "rawPayload", "true" }
+                    }
+                );
                 _logger.LogInformation("Published employee message for Id: {Id}, Name: {Name}", 
                     employee.Id, employee.Name);
                 return Ok();

@@ -1,8 +1,14 @@
-namespace Shared.Contracts.Models
+// Shared.Contracts/Models/Employee.cs
+using System.Text.Json.Serialization;
+
+namespace Shared.Contracts.Models;
+
+public class Employee
 {
-    public class Employee
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-    }
+
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
 }

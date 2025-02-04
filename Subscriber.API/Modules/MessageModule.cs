@@ -1,12 +1,10 @@
+// Subscriber.API/Modules/MessagesModule.cs
 using Carter;
-using Carter.OpenApi;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Shared.Contracts.Models;
 using Subscriber.API.Commands;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Dapr;
+using System.Text.Json;
 
 namespace Subscriber.API.Modules;
 
@@ -14,30 +12,57 @@ public class MessagesModule : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        // Create the route handler
-        var handler = async (Employee employee, IMediator mediator, ILogger<MessagesModule> logger) =>
+        var employeeHandler = async (HttpContext context, IMediator mediator, ILogger<MessagesModule> logger) =>
         {
-            try 
+            using var reader = new StreamReader(context.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            
+            // Parse the event
+            var jsonDoc = JsonDocument.Parse(json);
+            
+            logger.LogInformation(json);
+
+            // Deserialize it as Employee
+            var employee = JsonSerializer.Deserialize<Employee>(jsonDoc);
+            if (employee != null)   
             {
-                logger.LogInformation("Received message - Employee: {Id}, {Name}", 
+                logger.LogInformation("Received employee - Id: {Id}, Name: {Name}", 
                     employee.Id, 
                     employee.Name);
-                    
+                
                 await mediator.Send(new ProcessEmployeeCommand(employee));
-                return Results.Ok();
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error processing message");
-                return Results.StatusCode(500);
-            }
+
+            return Results.Ok();
         };
 
-        // Map the route for both HTTP and Dapr
-        app.MapPost("/messages", handler)
-           .WithTopic("redis-pubsub", "employeemessage")  // This enables Dapr subscription
-           .WithName("ProcessMessage")
-           .WithTags("Messages")
-           .WithOpenApi();
+        // Root endpoint
+        app.MapGet("/", () => "Subscriber API")
+           .WithTags("Home");
+
+        // Dapr subscription endpoint - using absolute path to avoid conflicts
+        app.MapGet("/dapr/subscribe", (HttpContext context) =>
+        {
+            var subscriptions = new[]
+            {
+                new
+                {
+                    pubsubname = "redis-pubsub",
+                    topic = "employeemessage",
+                    route = "/messages",
+                    metadata = new Dictionary<string, string>
+                    {
+                        { "isRawPayload", "true" },
+                        { "content-type", "application/json" }
+                    }
+                }
+            };
+            return Results.Ok(subscriptions);
+        })
+        .ExcludeFromDescription();  // This excludes it from OpenAPI/Swagger
+
+        // Message handler endpoint
+        app.MapPost("/messages", employeeHandler)
+           .WithTags("Messages");
     }
 }
