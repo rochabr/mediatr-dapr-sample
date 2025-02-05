@@ -15,6 +15,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Uncomment this to reproduce https://github.com/dapr/dotnet-sdk/issues/1454
+//app.MapSubscribeHandler();
+
 app.MapCarter();
 
 app.Run();

@@ -37,10 +37,10 @@ public class MessagesModule : ICarterModule
         };
 
         // Root endpoint
-        app.MapGet("/", () => "Subscriber API")
-           .WithTags("Home");
+        // app.MapGet("/", () => "Subscriber API")
+        //    .WithTags("Home");
 
-        // Dapr subscription endpoint - using absolute path to avoid conflicts
+        //Dapr subscription endpoint - using absolute path to avoid conflicts
         app.MapGet("/dapr/subscribe", (HttpContext context) =>
         {
             var subscriptions = new[]
@@ -61,8 +61,21 @@ public class MessagesModule : ICarterModule
         })
         .ExcludeFromDescription();  // This excludes it from OpenAPI/Swagger
 
-        // Message handler endpoint
+
+        //Message handler endpoint
         app.MapPost("/messages", employeeHandler)
            .WithTags("Messages");
+
+
+        // To reproduce issue https://github.com/dapr/dotnet-sdk/issues/1454 comment the two endpoits above and uncomment the one below
+        // app.MapPost("/messages", employeeHandler)
+        //     .WithTopic("redis-pubsub", "employeemessage", true, new Dictionary<string, string>
+        //             {
+        //                 { "content-type", "application/json" }
+        //             })  // This enables Dapr subscription - true == raw messages
+        //     .WithName("ProcessMessage")
+        //     .WithTags("Messages")
+        //     .WithOpenApi();
     }
+
 }
